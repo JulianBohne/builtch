@@ -150,6 +150,7 @@ goto :build_debug
 
 @rem -------------------- Build debug ---------------------
 :build_debug
+if not exist bin mkdir bin
 call :logger DEBUG "%compiler% '%source_dir%%source_file%' %common_args% %debug_args%%comp_args% -o '%output_dir%%output_file%'"
 call :logger INFO "Compiling for debug..."
 
@@ -162,6 +163,7 @@ exit /b
 
 @rem ------------------- Build release --------------------
 :build_release
+if not exist bin mkdir bin
 call :logger INFO "Compiling for release..."
 call :logger DEBUG "%compiler% '%source_dir%%source_file%' %common_args% %release_args%%comp_args% -o '%output_dir%%output_file%'"
 
@@ -279,7 +281,7 @@ echo @rem I think it's fine in other terminals>>config.bat
 echo exit /b 0 >>config.bat
 
 echo #include ^<stdio.h^> >"src\%project_name%.c"
-echo. >>src\%project_name%.c
+echo. >>src\"%project_name%.c"
 echo int main(int argc, char** argv) {>>"src\%project_name%.c"
 echo.    printf("Hello %project_name%!\n");>>"src\%project_name%.c"
 echo.    return 0;>>"src\%project_name%.c"
