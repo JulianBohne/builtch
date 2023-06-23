@@ -56,7 +56,8 @@ if %task%=="build" goto :parse_builtch_args
 if %task%=="test" goto :parse_builtch_args
 if %task%=="init" goto :parse_init_args
 call :logger ERROR "Unknown argument: %task%"
-call :logger INFO "Expected one of these [build | run | test | init]"
+@rem Yes, this is not good/reusable. I just don't know how to pass the pipes to the logger :(
+echo [94m[INFO][0m Expected one of these [build ^| run ^| test ^| init]
 call :logger INFO "Try calling --help for help"
 exit /b
 
