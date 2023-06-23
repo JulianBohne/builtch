@@ -297,11 +297,11 @@ if not exist "builtch.bat" copy "%actual_batch_path%" "builtch.bat" >nul
 call :logger SUCCESS "Project '%project_name%' created" successfully
 exit /b
 
+@rem https://answers.microsoft.com/en-us/windows/forum/all/how-to-get-my-own-path-in-a-batch-file/7a451f44-abce-4dff-aaab-dc8d18c4fe12
 :actual_batch_path
 set actual_batch_path=%~dpnx0
 exit /b
 
-@rem https://answers.microsoft.com/en-us/windows/forum/all/how-to-get-my-own-path-in-a-batch-file/7a451f44-abce-4dff-aaab-dc8d18c4fe12
 :set_project_name_to_folder_name
 set project_name=%~nx1
 exit /b
