@@ -277,7 +277,7 @@ echo set test_args=-D _DEBUG -D TESTING>>config.bat
 echo. >>config.bat
 echo @rem I don't know why, but you have to add this.>>config.bat
 echo @rem Otherwise this doesn't always return 0 when used in cmd.>>config.bat
-echo @rem I think it's fine in other terminals>>config.bat
+echo @rem I think it's fine in other terminals.>>config.bat
 echo exit /b 0 >>config.bat
 
 echo #include ^<stdio.h^> >"src\%project_name%.c"

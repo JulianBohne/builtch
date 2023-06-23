@@ -12,5 +12,5 @@ set test_args=-D _DEBUG -D TESTING
  
 @rem I don't know why, but you have to add this.
 @rem Otherwise this doesn't always return 0 when used in cmd.
-@rem I think it's fine in other terminals
+@rem I think it's fine in other terminals.
 exit /b 0 
