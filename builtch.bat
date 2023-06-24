@@ -1,7 +1,7 @@
 @echo off
 
 @rem The MIT license can be found at the bottom of the file
-@rem Builtch Version 0.1.0
+@rem Builtch Version 0.1.1
 
 @rem ------------ Things for your `config.bat` ------------
 @rem WARNING: Some of these comments are pretty dumb
