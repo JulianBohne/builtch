@@ -1,2 +1,2 @@
 # Batch files should always have crlf line endings
-*.bat text eol=crlf
+*.bat binary
