@@ -33,9 +33,6 @@ set test_dir=test
 @rem You can set args for all tests with this variable
 set test_args=-D TESTING
 
-@rem 
-set show_debug=false
-
 @rem ------------------- Parse arguments -------------------
 
 set task="%~1"
@@ -43,6 +40,8 @@ shift
 
 set comp_args=
 set prog_args=
+set show_debug=false
+set add_local_builtch=false
 
 @rem First test everything where we have to show help
 if %task%==""       goto :show_help
@@ -65,6 +64,7 @@ exit /b
 set current_arg=%~1
 if "%current_arg%"=="" goto :initialize_project
 if "%current_arg%"=="--show_debug" (set show_debug=true&goto :next_init_arg)
+if "%current_arg%"=="--portable" (set add_local_builtch=true&goto :next_init_arg)
 if "%current_arg:~0,1%"=="-" (call :logger ERROR "Unknown argument '%current_arg%'"&exit /b 1)
 set project_name=%current_arg%
 :next_init_arg
@@ -202,6 +202,8 @@ set failed_names=
 
 for /r %%i in (%test_dir%\*) do call :run_test "%%i"
 
+echo.
+call :logger SUMMARY
 if not %test_count%==%successful_tests% goto :some_tests_failed
 @rem All tests successful here
 call :logger SUCCESS "[%successful_tests%/%test_count%] tests finished successfully"
@@ -289,11 +291,14 @@ echo.    printf("Hello %project_name%!\n");>>"src\%project_name%.c"
 echo.    return 0;>>"src\%project_name%.c"
 echo }>>"src\%project_name%.c"
 
+
+if "%add_local_builtch%"=="false" goto :done_with_init
 call :actual_batch_path
 call :logger DEBUG "%actual_batch_path%"
 if exist "builtch.bat" call :logger DEBUG "builtch.bat already exists"
 if not exist "builtch.bat" copy "%actual_batch_path%" "builtch.bat" >nul
 
+:done_with_init
 call :logger SUCCESS "Project '%project_name%' created" successfully
 exit /b
 
@@ -309,19 +314,23 @@ exit /b
 @rem ------------------------ Help -------------------------
 :show_help
 echo [92m[Usage][0m
-echo builtch [build ^| run ^| test] (FLAGS) (---comp ^<your additional compiler args^>) (---prog ^<arguments that you want to pass to your program^>)
+echo builtch [build ^| run ^| test] (Flags) (---comp ^<your additional compiler args^>) (---prog ^<arguments that you want to pass to your program^>)
 echo You can do as many ---comp or ---prog blocks as you want.
-echo builtch [--help ^| -help ^| help ^| /?]
-echo builtch init ^<optional project name^>
-echo.
 echo Additional compiler args specified with ---comp will be supplied after the ones specified in `config.bat`
+echo.
+echo builtch [--help ^| -help ^| help ^| /?]
+echo builtch init ^<optional project name^> (Flags)
+echo.
 echo You can find all settable variables at the top of `builtch.bat`
 echo.
 echo [92m[Flags][0m
-echo --release          Use release compiler args from `config.bat` instead of debug args (does not apply to test)
-echo --show_debug       Show some debug information while running the script
+echo --release           Use release compiler args from `config.bat` instead of debug args (does not apply to test)
+echo --show_debug        Show some debug information while running the script
+echo --portable          Copy builtch.bat into project folder when initializing project
 echo.
+echo [94m[Example][0m builtch init my_cool_project --portable
 echo [94m[Example][0m builtch run --release ---comp -O3 -D NDEBUG ---prog one two three
+echo.
 exit /b
 
 @rem ---------------------- Loggers -----------------------
