@@ -252,7 +252,7 @@ if "%project_name%"=="" call :set_project_name_to_folder_name "%CD%"
 dir /b /s /a "%CD%" | findstr .>nul || goto :folder_empty_or_allowed_to_overwrite
 
 call :logger WARNING "This folder is not empty!"
-set /p allowed_to_overwrite=Proceed anyways (Y/N)? 
+set /p allowed_to_overwrite=Proceed anyways? [y^|n] 
 
 if "%allowed_to_overwrite%"=="Y" goto :folder_empty_or_allowed_to_overwrite
 if "%allowed_to_overwrite%"=="y" goto :folder_empty_or_allowed_to_overwrite
