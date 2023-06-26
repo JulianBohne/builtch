@@ -1,7 +1,8 @@
 @echo off
 
 @rem The MIT license can be found at the bottom of the file
-@rem Builtch Version 0.1.1
+set builtch_version_string=--------- Version 0.1.1 ---------
+@rem Note: keep aligned:   ---------------------------------
 
 @rem ------------ Things for your `config.bat` ------------
 @rem WARNING: Some of these comments are pretty dumb
@@ -268,6 +269,7 @@ if not exist bin mkdir bin
 if not exist test mkdir test
 
 echo @rem ----- Builtch Configuration ----->config.bat
+echo @rem %builtch_version_string%>>config.bat
 echo. >>config.bat
 echo @rem ------------- Files ------------->>config.bat
 echo set source_file=%project_name%.c>>config.bat
