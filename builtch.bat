@@ -34,8 +34,11 @@ set test_dir=test
 @rem You can set args for all tests with this variable
 set test_args=-D TESTING
 
-@rem ------------------- Parse arguments -------------------
+@rem ------------------ Change to unicode ------------------
+@rem https://stackoverflow.com/questions/36040704/unicode-symbols-in-a-batch-file
+chcp 65001
 
+@rem ------------------- Parse arguments -------------------
 set task="%~1"
 shift
 
@@ -253,7 +256,7 @@ if "%project_name%"=="" call :set_project_name_to_folder_name "%CD%"
 dir /b /s /a "%CD%" | findstr .>nul || goto :folder_empty_or_allowed_to_overwrite
 
 call :logger WARNING "This folder is not empty!"
-set /p allowed_to_overwrite=Proceed anyways? [y^|n] 
+set /p allowed_to_overwrite=Proceed anyways? [y/n] 
 
 if "%allowed_to_overwrite%"=="Y" goto :folder_empty_or_allowed_to_overwrite
 if "%allowed_to_overwrite%"=="y" goto :folder_empty_or_allowed_to_overwrite
