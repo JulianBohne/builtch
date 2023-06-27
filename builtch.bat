@@ -190,7 +190,7 @@ if %ERRORLEVEL% neq 0 (
     call :logger ERROR "Program exited with non zero exit code: %ERRORLEVEL%" &exit /b
 )
 
-call :logger SUCCESS "Everything done :D"
+call :logger SUCCESS "Everything done 💚"
 exit /b
 
 @rem ------------------- Run all tests --------------------
@@ -207,7 +207,7 @@ echo.
 call :logger SUMMARY
 if not %test_count%==%successful_tests% goto :some_tests_failed
 @rem All tests successful here
-call :logger SUCCESS "[%successful_tests%/%test_count%] tests finished successfully"
+call :logger SUCCESS "[%successful_tests%/%test_count%] tests finished successfully 💚"
 goto :end_of_testing
 
 :some_tests_failed
