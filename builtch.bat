@@ -6,18 +6,19 @@ set builtch_version_string=--------- Version 0.1.1 ---------
 
 @rem ------------ Things for your `config.bat` ------------
 @rem WARNING: Some of these comments are pretty dumb
+@rem I think directories should be relative to where you run this file
+
 @rem You can set the path to your compiler with this variable (I don't know of this works with anything but gcc though)
 set compiler=gcc
 
-@rem This is the name of the output file (yes, only .exe for now)
-set output_file=a.exe
-
-@rem I think directories should be relative to where you run this file
 @rem This is the name of the source directory
 set source_dir=src
 
 @rem This is the name of the output directory
 set output_dir=bin
+
+@rem This is the name of the output file (yes, only .exe for now)
+set output_file=a.exe
 
 @rem You can set args for debug and release with this variable
 set common_args=
@@ -36,7 +37,7 @@ set test_args=-D TESTING
 
 @rem ------------------ Change to unicode ------------------
 @rem https://stackoverflow.com/questions/36040704/unicode-symbols-in-a-batch-file
-chcp 65001
+chcp 65001>nul
 
 @rem ------------------- Parse arguments -------------------
 set task="%~1"
@@ -162,7 +163,7 @@ call :logger INFO "Compiling for debug..."
 
 call %compiler% "%source_dir%\%source_file%" %common_args% %debug_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
 
-call :over_logger SUCCESS "Compiled successfully"
+call :over_logger SUCCESS "Compiled debug successfully"
 
 if %task%=="run" goto :run_program
 exit /b
@@ -175,7 +176,7 @@ call :logger DEBUG "%compiler% '%source_dir%%source_file%' %common_args% %releas
 
 call %compiler% "%source_dir%\%source_file%" %common_args% %release_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
 
-call :logger SUCCESS "Compiled successfully"
+call :logger SUCCESS "Compiled release successfully"
 
 if %task%=="run" goto :run_program
 exit /b
