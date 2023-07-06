@@ -1,8 +1,8 @@
 @echo off
 
 @rem The MIT license can be found at the bottom of the file
-set builtch_version_string=--------- Version 0.1.1 ---------
-@rem Note: keep aligned:   ---------------------------------
+set builtch_version_string=--------- Version 0.1.2 ---------
+@rem Note: keep aligned:       ---------------------------------
 
 @rem ------------ Things for your `config.bat` ------------
 @rem WARNING: Some of these comments are pretty dumb
@@ -54,6 +54,10 @@ if %task%=="--help" goto :show_help
 if %task%=="-help"  goto :show_help
 if %task%=="help"   goto :show_help
 if %task%=="/?"     goto :show_help
+@rem Also everything where we show the version :D
+if %task%=="version" goto :show_version
+if %task%=="-version" goto :show_version
+if %task%=="--version" goto :show_version
 @rem If we have to build or run, then we can start parsing the rest
 if %task%=="run" goto :parse_builtch_args
 if %task%=="build" goto :parse_builtch_args
@@ -336,6 +340,14 @@ echo --portable          Copy builtch.bat into project folder when initializing 
 echo.
 echo [94m[Example][0m builtch init my_cool_project --portable
 echo [94m[Example][0m builtch run --release ---comp -O3 -D NDEBUG ---prog one two three
+echo.
+exit /b
+
+@rem ---------------------- Version -----------------------
+:show_version
+echo ------------ Builtch ------------
+echo %builtch_version_string%
+echo Made with [91mhatred[0m for batch 💚
 echo.
 exit /b
 

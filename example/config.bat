@@ -1,5 +1,5 @@
 @rem ----- Builtch Configuration -----
-@rem --------- Version 0.1.1 ---------
+@rem --------- Version 0.1.2 ---------
  
 @rem ------------- Files -------------
 set source_file=example.c
