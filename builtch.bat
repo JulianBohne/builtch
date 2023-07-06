@@ -1,8 +1,8 @@
 @echo off
 
 @rem The MIT license can be found at the bottom of the file
-set builtch_version_string=--------- Version 0.1.2 ---------
-@rem Note: keep aligned:       ---------------------------------
+set builtch_version_string=--------- Version 0.1.3 ---------
+@rem Note: keep same size: ---------------------------------
 
 @rem ------------ Things for your `config.bat` ------------
 @rem WARNING: Some of these comments are pretty dumb
@@ -55,23 +55,27 @@ if %task%=="-help"  goto :show_help
 if %task%=="help"   goto :show_help
 if %task%=="/?"     goto :show_help
 @rem Also everything where we show the version :D
-if %task%=="version" goto :show_version
-if %task%=="-version" goto :show_version
+if %task%=="version"   goto :show_version
+if %task%=="-version"  goto :show_version
 if %task%=="--version" goto :show_version
 @rem If we have to build or run, then we can start parsing the rest
-if %task%=="run" goto :parse_builtch_args
+if %task%=="run"   goto :parse_builtch_args
 if %task%=="build" goto :parse_builtch_args
-if %task%=="test" goto :parse_builtch_args
-if %task%=="init" goto :parse_init_args
+if %task%=="test"  goto :parse_builtch_args
+if %task%=="init"  goto :parse_init_args
+if %task%=="new"   goto :parse_init_args
 call :logger ERROR "Unknown argument: %task%"
 @rem Yes, this is not good/reusable. I just don't know how to pass the pipes to the logger :(
-echo [94m[INFO][0m Expected one of these [build ^| run ^| test ^| init ^| version]
+echo [94m[INFO][0m Expected one of these [build ^| run ^| test ^| init ^| new]
 call :logger INFO "Try calling --help for help"
 exit /b
 
 :parse_init_args
 set current_arg=%~1
-if "%current_arg%"=="" goto :initialize_project
+if "%current_arg%"=="" (
+    if %task%=="new" goto :make_project_directory
+    goto :initialize_project
+)
 if "%current_arg%"=="--show_debug" (set show_debug=true&goto :next_init_arg)
 if "%current_arg%"=="--portable" (set add_local_builtch=true&goto :next_init_arg)
 if "%current_arg:~0,1%"=="-" (call :logger ERROR "Unknown argument '%current_arg%'"&exit /b 1)
@@ -254,6 +258,20 @@ goto :test_cleanup
 if exist "%test_dir%\tmp\%current_file_name%.exe" del /f "%test_dir%\tmp\%current_file_name%.exe"
 exit /b
 
+@rem --------------- Make project directory ---------------
+:make_project_directory
+if not "%project_name%"=="" goto :project_directory_success
+call :logger ERROR "No project name provided"
+@rem Yes, this is not good/reusable. I just don't know how to pass the lt/gt to the logger :(
+echo [94m[INFO][0m Try: builtch new ^<project name^> (Flags)
+call :logger INFO "Try calling --help for help"
+exit /b
+
+:project_directory_success
+if not exist "%project_name%" mkdir "%project_name%"
+cd "%project_name%"
+goto :initialize_project
+
 @rem ----------------- Initialize project -----------------
 :initialize_project
 if "%project_name%"=="" call :set_project_name_to_folder_name "%CD%"
@@ -323,15 +341,20 @@ exit /b
 
 @rem ------------------------ Help -------------------------
 :show_help
+call :show_version
+echo Builtch is a small build tool for C, written in batch.
+echo.
 echo [92m[Usage][0m
 echo builtch [build ^| run ^| test] (Flags) (---comp ^<your additional compiler args^>) (---prog ^<arguments that you want to pass to your program^>)
-echo You can do as many ---comp or ---prog blocks as you want.
+echo You may use as many ---comp or ---prog blocks as you want.
 echo Additional compiler args specified with ---comp will be supplied after the ones specified in `config.bat`
 echo.
 echo builtch [--help ^| -help ^| help ^| /?]            Show help
 echo builtch [--version ^| -version ^| version]        Show version
 echo builtch init ^<optional project name^> (Flags)    Initialize new project in current folder
+echo builtch new ^<project name^> (Flags)              Initialize new project in new folder
 echo.
+echo You can configure your project in the `config.bat` in the project root
 echo You can find all settable variables at the top of `builtch.bat`
 echo.
 echo [92m[Flags][0m
@@ -346,6 +369,7 @@ exit /b
 
 @rem ---------------------- Version -----------------------
 :show_version
+echo.
 echo ------------ Builtch ------------
 echo %builtch_version_string%
 echo Made with [91mhatred[0m for batch 💚
