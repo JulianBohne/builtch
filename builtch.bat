@@ -65,7 +65,7 @@ if %task%=="test" goto :parse_builtch_args
 if %task%=="init" goto :parse_init_args
 call :logger ERROR "Unknown argument: %task%"
 @rem Yes, this is not good/reusable. I just don't know how to pass the pipes to the logger :(
-echo [94m[INFO][0m Expected one of these [build ^| run ^| test ^| init]
+echo [94m[INFO][0m Expected one of these [build ^| run ^| test ^| init ^| version]
 call :logger INFO "Try calling --help for help"
 exit /b
 
@@ -328,8 +328,9 @@ echo builtch [build ^| run ^| test] (Flags) (---comp ^<your additional compiler 
 echo You can do as many ---comp or ---prog blocks as you want.
 echo Additional compiler args specified with ---comp will be supplied after the ones specified in `config.bat`
 echo.
-echo builtch [--help ^| -help ^| help ^| /?]
-echo builtch init ^<optional project name^> (Flags)
+echo builtch [--help ^| -help ^| help ^| /?]            Show help
+echo builtch [--version ^| -version ^| version]        Show version
+echo builtch init ^<optional project name^> (Flags)    Initialize new project in current folder
 echo.
 echo You can find all settable variables at the top of `builtch.bat`
 echo.
