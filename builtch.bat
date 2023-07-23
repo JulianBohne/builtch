@@ -192,7 +192,7 @@ call :logger INFO "Compiling for debug ..."
 
 call %compiler% %collected_source_files% -I %include_dir% %common_args% %debug_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
 
-call :over_logger SUCCESS "Compiled debug successfully"
+call :logger SUCCESS "Compiled debug successfully"
 
 if %builtch_task%=="run" goto :run_program
 exit /b
@@ -200,8 +200,8 @@ exit /b
 @rem ------------------- Build release --------------------
 :build_release
 if not exist bin mkdir bin
-call :logger INFO "Compiling for release ..."
 call :logger DEBUG "%compiler% %collected_source_files% -I %include_dir% %common_args% %release_args%%comp_args% -o "%output_dir%\%output_file%""
+call :logger INFO "Compiling for release ..."
 
 call %compiler% %collected_source_files% -I %include_dir% %common_args% %release_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
 
@@ -212,7 +212,7 @@ exit /b
 
 @rem ------------------------ Run -------------------------
 :run_program
-call :logger INFO "Running program..."
+call :logger INFO "Running program ..."
 call :logger DEBUG "'%output_dir%\%output_file%'%prog_args%"
 echo.
 
