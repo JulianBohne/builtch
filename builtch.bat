@@ -1,18 +1,24 @@
 @echo off
 
 @rem The MIT license can be found at the bottom of the file
-set builtch_version_string=--------- Version 0.1.4 ---------
+set builtch_version_string=--------- Version 0.2.0 ---------
 @rem Note: keep same size: ---------------------------------
 
 @rem ------------ Things for your `config.bat` ------------
 @rem WARNING: Some of these comments are pretty dumb
-@rem I think directories should be relative to where you run this file
+@rem Directories should be relative to where you run this file
 
 @rem You can set the path to your compiler with this variable (I don't know of this works with anything but gcc though)
 set compiler=gcc
 
 @rem This is the name of the source directory
 set source_dir=src
+
+@rem You can set your source files with this one (comma separated, no quotes)
+set source_files=
+
+@rem You can set one additional include directory with this (otherwise you can specify more with common_args)
+set include_dir=include
 
 @rem This is the name of the output directory
 set output_dir=bin
@@ -112,7 +118,8 @@ if %ERRORLEVEL% neq 0 (
 )
 
 @rem Validating config
-if "%source_file%"=="" (call :logger ERROR "No source file set in `config.bat`" &call :logger INFO "Try: set source_file=your_source.c" &exit /b)
+if not "%source_file%"=="" set source_files=%source_file%
+if "%source_files%"=="" (call :logger ERROR "No source file(s) set in `config.bat`" &call :logger INFO "Try: set source_files=your_source.c, other source.c" &exit /b)
 
 goto :collect_other_args
 
@@ -164,16 +171,26 @@ call :logger DEBUG "Program arguments:%prog_args%"
 
 @rem Switch on task and build mode
 if %task%=="test" goto :run_all_tests
+
+@rem In these cases we need to prepare the source file paths#
+@rem This took so long to find :')
+@rem https://stackoverflow.com/questions/17158719/how-to-loop-through-comma-separated-string-in-batch 
+set collected_source_files=
+for %%a in ("%source_files:,=" "%") do (
+    call :trim_and_collect_source %%~a
+)
+
 if "%build_mode%"=="release" goto :build_release
 goto :build_debug
 
 @rem -------------------- Build debug ---------------------
 :build_debug
 if not exist bin mkdir bin
-call :logger DEBUG "%compiler% '%source_dir%\%source_file%' %common_args% %debug_args%%comp_args% -o '%output_dir%\%output_file%'"
+@rem I really don't know how/why the quotes in the quotes work properly ':D
+call :logger DEBUG "%compiler%%collected_source_files% -I %include_dir% %common_args% %debug_args%%comp_args% -o "%output_dir%\%output_file%""
 call :logger INFO "Compiling for debug..."
 
-call %compiler% "%source_dir%\%source_file%" %common_args% %debug_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
+call %compiler% %collected_source_files% -I %include_dir% %common_args% %debug_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
 
 call :over_logger SUCCESS "Compiled debug successfully"
 
@@ -184,9 +201,9 @@ exit /b
 :build_release
 if not exist bin mkdir bin
 call :logger INFO "Compiling for release..."
-call :logger DEBUG "%compiler% '%source_dir%\%source_file%' %common_args% %release_args%%comp_args% -o '%output_dir%\%output_file%'"
+call :logger DEBUG "%compiler% %collected_source_files% -I %include_dir% %common_args% %release_args%%comp_args% -o "%output_dir%\%output_file%""
 
-call %compiler% "%source_dir%\%source_file%" %common_args% %release_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
+call %compiler% %collected_source_files% -I %include_dir% %common_args% %release_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
 
 call :logger SUCCESS "Compiled release successfully"
 
@@ -295,6 +312,7 @@ exit /b 1
 
 :folder_empty_or_allowed_to_overwrite
 if not exist src mkdir src
+if not exist include mkdir include
 if not exist bin mkdir bin
 if not exist test mkdir test
 
@@ -302,7 +320,7 @@ echo @rem ----- Builtch Configuration ----->config.bat
 echo @rem %builtch_version_string%>>config.bat
 echo.>>config.bat
 echo @rem ------------- Files ------------->>config.bat
-echo set source_file=%project_name%.c>>config.bat
+echo set source_files=%project_name%.c>>config.bat
 echo set output_file=%project_name%.exe>>config.bat
 echo.>>config.bat
 echo @rem ----------- Arguments ----------->>config.bat
@@ -378,6 +396,14 @@ echo ------------ Builtch ------------
 echo %builtch_version_string%
 echo Made with [91mhatred[0m for batch 💚
 echo.
+exit /b
+
+@rem -------------- Trim and Collect Source ---------------
+@rem https://stackoverflow.com/questions/3001999/how-to-remove-trailing-and-leading-whitespace-for-user-provided-input-in-a-batch
+@rem I don't know why I can't do the collecting part in the loop, but it just doen't work :))) 
+:trim_and_collect_source
+echo FOUND: %*
+set collected_source_files=%collected_source_files% "%source_dir%\%*"
 exit /b
 
 @rem ---------------------- Loggers -----------------------

@@ -1,8 +1,8 @@
 @rem ----- Builtch Configuration -----
-@rem --------- Version 0.1.4 ---------
+@rem --------- Version 0.2.0 ---------
 
 @rem ------------- Files -------------
-set source_file=example.c
+set source_files=example.c, hello.c
 set output_file=example.exe
 
 @rem ----------- Arguments -----------
