@@ -46,7 +46,7 @@ set test_args=-D TESTING
 chcp 65001>nul
 
 @rem ------------------- Parse arguments -------------------
-set task="%~1"
+set builtch_task="%~1"
 shift
 
 set comp_args=
@@ -55,22 +55,22 @@ set show_debug=false
 set add_local_builtch=false
 
 @rem First test everything where we have to show help
-if %task%==""       goto :show_help
-if %task%=="--help" goto :show_help
-if %task%=="-help"  goto :show_help
-if %task%=="help"   goto :show_help
-if %task%=="/?"     goto :show_help
+if %builtch_task%==""       goto :show_help
+if %builtch_task%=="--help" goto :show_help
+if %builtch_task%=="-help"  goto :show_help
+if %builtch_task%=="help"   goto :show_help
+if %builtch_task%=="/?"     goto :show_help
 @rem Also everything where we show the version :D
-if %task%=="version"   goto :show_version
-if %task%=="-version"  goto :show_version
-if %task%=="--version" goto :show_version
+if %builtch_task%=="version"   goto :show_version
+if %builtch_task%=="-version"  goto :show_version
+if %builtch_task%=="--version" goto :show_version
 @rem If we have to build or run, then we can start parsing the rest
-if %task%=="run"   goto :parse_builtch_args
-if %task%=="build" goto :parse_builtch_args
-if %task%=="test"  goto :parse_builtch_args
-if %task%=="init"  goto :parse_init_args
-if %task%=="new"   goto :parse_init_args
-call :logger ERROR "Unknown argument: %task%"
+if %builtch_task%=="run"   goto :parse_builtch_args
+if %builtch_task%=="build" goto :parse_builtch_args
+if %builtch_task%=="test"  goto :parse_builtch_args
+if %builtch_task%=="init"  goto :parse_init_args
+if %builtch_task%=="new"   goto :parse_init_args
+call :logger ERROR "Unknown argument: %builtch_task%"
 @rem Yes, this is not good/reusable. I just don't know how to pass the pipes to the logger :(
 echo [94m[INFO][0m Expected one of these [build ^| run ^| test ^| init ^| new]
 call :logger INFO "Try calling --help for help"
@@ -79,7 +79,7 @@ exit /b
 :parse_init_args
 set current_arg=%~1
 if "%current_arg%"=="" (
-    if %task%=="new" goto :make_project_directory
+    if %builtch_task%=="new" goto :make_project_directory
     goto :initialize_project
 )
 if "%current_arg%"=="--show_debug" (set show_debug=true&goto :next_init_arg)
@@ -169,8 +169,8 @@ goto done_printing_prog_args
 call :logger DEBUG "Program arguments:%prog_args%"
 :done_printing_prog_args
 
-@rem Switch on task and build mode
-if %task%=="test" goto :run_all_tests
+@rem Switch on builtch_task and build mode
+if %builtch_task%=="test" goto :run_all_tests
 
 @rem In these cases we need to prepare the source file paths#
 @rem This took so long to find :')
@@ -188,26 +188,26 @@ goto :build_debug
 if not exist bin mkdir bin
 @rem I really don't know how/why the quotes in the quotes work properly ':D
 call :logger DEBUG "%compiler%%collected_source_files% -I %include_dir% %common_args% %debug_args%%comp_args% -o "%output_dir%\%output_file%""
-call :logger INFO "Compiling for debug..."
+call :logger INFO "Compiling for debug ..."
 
 call %compiler% %collected_source_files% -I %include_dir% %common_args% %debug_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
 
 call :over_logger SUCCESS "Compiled debug successfully"
 
-if %task%=="run" goto :run_program
+if %builtch_task%=="run" goto :run_program
 exit /b
 
 @rem ------------------- Build release --------------------
 :build_release
 if not exist bin mkdir bin
-call :logger INFO "Compiling for release..."
+call :logger INFO "Compiling for release ..."
 call :logger DEBUG "%compiler% %collected_source_files% -I %include_dir% %common_args% %release_args%%comp_args% -o "%output_dir%\%output_file%""
 
 call %compiler% %collected_source_files% -I %include_dir% %common_args% %release_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
 
 call :logger SUCCESS "Compiled release successfully"
 
-if %task%=="run" goto :run_program
+if %builtch_task%=="run" goto :run_program
 exit /b
 
 @rem ------------------------ Run -------------------------
