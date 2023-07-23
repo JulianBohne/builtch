@@ -402,7 +402,7 @@ exit /b
 @rem https://stackoverflow.com/questions/3001999/how-to-remove-trailing-and-leading-whitespace-for-user-provided-input-in-a-batch
 @rem I don't know why I can't do the collecting part in the loop, but it just doen't work :))) 
 :trim_and_collect_source
-echo FOUND: %*
+call :logger DEBUG "Found source file: %*"
 set collected_source_files=%collected_source_files% "%source_dir%\%*"
 exit /b
 
