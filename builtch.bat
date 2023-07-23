@@ -1,7 +1,7 @@
 @echo off
 
 @rem The MIT license can be found at the bottom of the file
-set builtch_version_string=--------- Version 0.1.3 ---------
+set builtch_version_string=--------- Version 0.1.4 ---------
 @rem Note: keep same size: ---------------------------------
 
 @rem ------------ Things for your `config.bat` ------------
@@ -102,9 +102,13 @@ goto :parse_builtch_args
 
 @rem --------------------- Load config ---------------------
 :load_config
-call config 2>nul
+if not exist config.bat (
+    call :logger ERROR "No configuration file found" &call :logger INFO "Try adding a `config.bat`." &exit /b
+)
+call config
+
 if %ERRORLEVEL% neq 0 (
-    call :logger ERROR "No configuration file found %ERRORLEVEL%" &call :logger INFO "Try adding a `config.bat`." &exit /b
+    call :logger ERROR "Config failed with exit code: %ERRORLEVEL%" &exit /b
 )
 
 @rem Validating config
@@ -166,7 +170,7 @@ goto :build_debug
 @rem -------------------- Build debug ---------------------
 :build_debug
 if not exist bin mkdir bin
-call :logger DEBUG "%compiler% '%source_dir%%source_file%' %common_args% %debug_args%%comp_args% -o '%output_dir%%output_file%'"
+call :logger DEBUG "%compiler% '%source_dir%\%source_file%' %common_args% %debug_args%%comp_args% -o '%output_dir%\%output_file%'"
 call :logger INFO "Compiling for debug..."
 
 call %compiler% "%source_dir%\%source_file%" %common_args% %debug_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
@@ -180,7 +184,7 @@ exit /b
 :build_release
 if not exist bin mkdir bin
 call :logger INFO "Compiling for release..."
-call :logger DEBUG "%compiler% '%source_dir%%source_file%' %common_args% %release_args%%comp_args% -o '%output_dir%%output_file%'"
+call :logger DEBUG "%compiler% '%source_dir%\%source_file%' %common_args% %release_args%%comp_args% -o '%output_dir%\%output_file%'"
 
 call %compiler% "%source_dir%\%source_file%" %common_args% %release_args% %comp_args% -o "%output_dir%\%output_file%" ||  (call :logger ERROR "Compilation failed" &exit /b)
 
@@ -296,24 +300,24 @@ if not exist test mkdir test
 
 echo @rem ----- Builtch Configuration ----->config.bat
 echo @rem %builtch_version_string%>>config.bat
-echo. >>config.bat
+echo.>>config.bat
 echo @rem ------------- Files ------------->>config.bat
 echo set source_file=%project_name%.c>>config.bat
 echo set output_file=%project_name%.exe>>config.bat
-echo. >>config.bat
+echo.>>config.bat
 echo @rem ----------- Arguments ----------->>config.bat
 echo set common_args=-Wall>>config.bat
 echo set debug_args=-D _DEBUG>>config.bat
-echo set release_args=-D NDEBUG>>config.bat
+echo set release_args=-D NDEBUG -O3>>config.bat
 echo set test_args=-D _DEBUG -D TESTING>>config.bat
-echo. >>config.bat
+echo.>>config.bat
 echo @rem I don't know why, but you have to add this.>>config.bat
 echo @rem Otherwise this doesn't always return 0 when used in cmd.>>config.bat
 echo @rem I think it's fine in other terminals.>>config.bat
 echo exit /b 0 >>config.bat
 
-echo #include ^<stdio.h^> >"src\%project_name%.c"
-echo. >>src\"%project_name%.c"
+echo #include ^<stdio.h^>>"src\%project_name%.c"
+echo.>>src\"%project_name%.c"
 echo int main(int argc, char** argv) {>>"src\%project_name%.c"
 echo.    printf("Hello %project_name%!\n");>>"src\%project_name%.c"
 echo.    return 0;>>"src\%project_name%.c"
