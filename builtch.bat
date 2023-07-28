@@ -1,7 +1,7 @@
 @echo off
 
 @rem The MIT license can be found at the bottom of the file
-set builtch_version_string=--------- Version 0.2.0 ---------
+set builtch_version_string=--------- Version 0.2.1 ---------
 @rem Note: keep same size: ---------------------------------
 
 @rem ------------ Things for your `config.bat` ------------
@@ -96,7 +96,7 @@ if "%current_arg%"=="" goto :load_config
 if "%current_arg:~0,3%"=="---" goto :load_config
 
 if "%current_arg%"=="--release" (set build_mode=release&goto :next_builtch_arg)
-if "%current_arg%"=="--show_debug" (set show_debug=true&goto :next_builtch_arg)
+if "%current_arg%"=="--show-debug" (set show_debug=true&goto :next_builtch_arg)
 
 call :logger ERROR "Unknown argument '%current_arg%'"
 call :logger INFO "Consider adding ---comp or ---prog before that to send it to the right process"
@@ -259,7 +259,7 @@ set /a test_count = %test_count% + 1
 
 @rem Compile...
 call :logger INFO "Compiling '%current_file_name%'"
-call %compiler% "%test_dir%\%current_file_name%" %common_args% %test_args% %comp_args% -o "%test_dir%\tmp\%current_file_name%.exe"
+call %compiler% "%test_dir%\%current_file_name%" -I %include_dir% %common_args% %test_args% %comp_args% -o "%test_dir%\tmp\%current_file_name%.exe"
 if %ERRORLEVEL% neq 0 (
     call :logger ERROR "Could not compile '%current_file_name%'"& set could_not_compile=%could_not_compile% '%current_file_name%'&goto :test_cleanup
 )
@@ -381,7 +381,7 @@ echo You can find all settable variables at the top of `builtch.bat`
 echo.
 echo [92m[Flags][0m
 echo --release           Use release compiler args from `config.bat` instead of debug args (does not apply to test)
-echo --show_debug        Show some debug information while running the script
+echo --show-debug        Show some debug information while running the script
 echo --portable          Copy builtch.bat into project folder when initializing project
 echo.
 echo [94m[Example][0m builtch init my_cool_project --portable
