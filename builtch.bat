@@ -64,15 +64,25 @@ if %builtch_task%=="/?"     goto :show_help
 if %builtch_task%=="version"   goto :show_version
 if %builtch_task%=="-version"  goto :show_version
 if %builtch_task%=="--version" goto :show_version
+
+@rem Handle aliases for other tasks
+@rem rbg lol :D
+if %builtch_task%=="r"   set builtch_task="run"
+if %builtch_task%=="g"   set builtch_task="generate"
+if %builtch_task%=="b"   set builtch_task="build"
+if %builtch_task%=="gen" set builtch_task="generate"
+
 @rem If we have to build or run, then we can start parsing the rest
-if %builtch_task%=="run"   goto :parse_builtch_args
-if %builtch_task%=="build" goto :parse_builtch_args
-if %builtch_task%=="test"  goto :parse_builtch_args
-if %builtch_task%=="init"  goto :parse_init_args
-if %builtch_task%=="new"   goto :parse_init_args
+if %builtch_task%=="run"      goto :parse_builtch_args
+if %builtch_task%=="build"    goto :parse_builtch_args
+if %builtch_task%=="test"     goto :parse_builtch_args
+if %builtch_task%=="init"     goto :parse_init_args
+if %builtch_task%=="new"      goto :parse_init_args
+if %builtch_task%=="generate" goto :generate_files
+
 call :logger ERROR "Unknown argument: %builtch_task%"
-@rem Yes, this is not good/reusable. I just don't know how to pass the pipes to the logger :(
-echo [94m[INFO][0m Expected one of these [build ^| run ^| test ^| init ^| new]
+@rem TODO:(Julian) Yes, this is not good/reusable. I just don't know how to pass the pipes to the logger :(
+echo [94m[INFO][0m Expected one of these [build ^| run ^| test ^| init ^| new ^| generate]
 call :logger INFO "Try calling --help for help"
 exit /b
 
@@ -91,9 +101,12 @@ shift
 goto :parse_init_args
 
 :parse_builtch_args
+call :load_config || exit /b
+
+:parse_builtch_args_loop
 set current_arg=%~1
-if "%current_arg%"=="" goto :load_config
-if "%current_arg:~0,3%"=="---" goto :load_config
+if "%current_arg%"=="" goto :collect_other_args
+if "%current_arg:~0,3%"=="---" goto :collect_other_args
 
 if "%current_arg%"=="--release" (set build_mode=release&goto :next_builtch_arg)
 if "%current_arg%"=="--show-debug" (set show_debug=true&goto :next_builtch_arg)
@@ -104,24 +117,24 @@ exit /b
 
 :next_builtch_arg
 shift
-goto :parse_builtch_args
+goto :parse_builtch_args_loop
 
 @rem --------------------- Load config ---------------------
 :load_config
 if not exist config.bat (
-    call :logger ERROR "No configuration file found" &call :logger INFO "Try adding a `config.bat`." &exit /b
+    call :logger ERROR "No configuration file found" &call :logger INFO "Try adding a `config.bat`." &exit /b 1
 )
 call config
 
 if %ERRORLEVEL% neq 0 (
-    call :logger ERROR "Config failed with exit code: %ERRORLEVEL%" &exit /b
+    call :logger ERROR "Config failed with exit code: %ERRORLEVEL%" &exit /b 1
 )
 
 @rem Validating config
 if not "%source_file%"=="" set source_files=%source_file%
-if "%source_files%"=="" (call :logger ERROR "No source file(s) set in `config.bat`" &call :logger INFO "Try: set source_files=your_source.c, other source.c" &exit /b)
+if "%source_files%"=="" (call :logger ERROR "No source file(s) set in `config.bat`" &call :logger INFO "Try: set source_files=your_source.c, other source.c" &exit /b 1)
 
-goto :collect_other_args
+exit /b 0
 
 @rem ----------------- Collect other args ------------------
 :collect_other_args
@@ -279,6 +292,54 @@ goto :test_cleanup
 if exist "%test_dir%\tmp\%current_file_name%.exe" del /f "%test_dir%\tmp\%current_file_name%.exe"
 exit /b
 
+@rem ------------------- Generate files -------------------
+:generate_files
+call :load_config || exit /b
+if "%~1"=="" (call :logger ERROR "File name provided"& exit /b 1)
+set base_name=%~1
+set uppercased_name=%~1
+call :to_screaming_snake_case uppercased_name
+
+if not exist ".\%source_dir%\%base_name%.c" goto :proceed_generate_c_file
+call :logger WARNING "File `%base_name%.c` already exists!"
+set /p allowed_to_overwrite=Proceed anyways? [y/N] 
+if "%allowed_to_overwrite%"=="Y"   goto :proceed_generate_c_file
+if "%allowed_to_overwrite%"=="y"   goto :proceed_generate_c_file
+if "%allowed_to_overwrite%"=="Yes" goto :proceed_generate_c_file
+if "%allowed_to_overwrite%"=="yes" goto :proceed_generate_c_file
+call :logger ERROR "Cancelled operation"
+exit /b 1
+
+:proceed_generate_c_file
+if not exist ".\%include_dir%\%base_name%.h" goto :proceed_generate_files
+call :logger WARNING "File `%base_name%.h` already exists!"
+set /p allowed_to_overwrite=Proceed anyways? [y/N] 
+if "%allowed_to_overwrite%"=="Y"   goto :proceed_generate_files
+if "%allowed_to_overwrite%"=="y"   goto :proceed_generate_files
+if "%allowed_to_overwrite%"=="Yes" goto :proceed_generate_files
+if "%allowed_to_overwrite%"=="yes" goto :proceed_generate_files
+call :logger ERROR "Cancelled operation"
+exit /b 1
+
+:proceed_generate_files
+@rem TODO: Check if the other file generation stuff (init project) also needs the quotation marks around the file name
+echo #include "%base_name%.h">".\%source_dir%\%base_name%.c"
+
+echo #ifndef %uppercased_name%_H>".\%include_dir%\%base_name%.h"
+echo #define %uppercased_name%_H>>".\%include_dir%\%base_name%.h"
+echo.>>".\%include_dir%\%base_name%.h"
+echo.>>".\%include_dir%\%base_name%.h"
+echo.>>".\%include_dir%\%base_name%.h"
+echo #endif // %uppercased_name%_H>>".\%include_dir%\%base_name%.h"
+
+call :logger SUCCESS "Successfully generated %base_name%.c and %base_name%.h"
+
+@rem TODO:(Julian) Also edit the config.bat (don't think this will be possible in the way that I hope sadly)
+@rem https://stackoverflow.com/questions/17372805/modify-file-content-using-batch-file
+call :logger INFO "Make sure to add `%base_name%.c` to your `source_files` in `config.bat` (comma separated list)"
+
+exit /b 0
+
 @rem --------------- Make project directory ---------------
 :make_project_directory
 if not "%project_name%"=="" goto :project_directory_success
@@ -300,10 +361,10 @@ if "%project_name%"=="" call :set_project_name_to_folder_name "%CD%"
 dir /b /s /a "%CD%" | findstr .>nul || goto :folder_empty_or_allowed_to_overwrite
 
 call :logger WARNING "This folder is not empty!"
-set /p allowed_to_overwrite=Proceed anyways? [y/n] 
+set /p allowed_to_overwrite=Proceed anyways? [y/N] 
 
-if "%allowed_to_overwrite%"=="Y" goto :folder_empty_or_allowed_to_overwrite
-if "%allowed_to_overwrite%"=="y" goto :folder_empty_or_allowed_to_overwrite
+if "%allowed_to_overwrite%"=="Y"   goto :folder_empty_or_allowed_to_overwrite
+if "%allowed_to_overwrite%"=="y"   goto :folder_empty_or_allowed_to_overwrite
 if "%allowed_to_overwrite%"=="Yes" goto :folder_empty_or_allowed_to_overwrite
 if "%allowed_to_overwrite%"=="yes" goto :folder_empty_or_allowed_to_overwrite
 
@@ -375,6 +436,7 @@ echo builtch [--help ^| -help ^| help ^| /?]            Show help
 echo builtch [--version ^| -version ^| version]        Show version
 echo builtch init ^<optional project name^> (Flags)    Initialize new project in current folder
 echo builtch new ^<project name^> (Flags)              Initialize new project in new folder
+echo builtch gen ^<base file name^>                    Generate a .h and .c file with a given name
 echo.
 echo You can configure your project in the `config.bat` in the project root
 echo You can find all settable variables at the top of `builtch.bat`
@@ -386,6 +448,7 @@ echo --portable          Copy builtch.bat into project folder when initializing 
 echo.
 echo [94m[Example][0m builtch init my_cool_project --portable
 echo [94m[Example][0m builtch run --release ---comp -O3 -D NDEBUG ---prog one two three
+echo [94m[Example][0m builtch gen "cool file"
 echo.
 exit /b
 
@@ -404,6 +467,18 @@ exit /b
 :trim_and_collect_source
 call :logger DEBUG "Found source file: %*"
 set collected_source_files=%collected_source_files% "%source_dir%\%*"
+exit /b
+
+@rem -------------- To SCREAMING_SNAKE case ---------------
+@rem https://stackoverflow.com/questions/34713621/batch-converting-variable-to-uppercase
+:to_screaming_snake_case
+if "%1"=="" exit /b 1
+for %%a in ("a=A" "b=B" "c=C" "d=D" "e=E" "f=F" "g=G" "h=H" "i=I"
+            "j=J" "k=K" "l=L" "m=M" "n=N" "o=O" "p=P" "q=Q" "r=R"
+            "s=S" "t=T" "u=U" "v=V" "w=W" "x=X" "y=Y" "z=Z" " =_" "-=_"
+) do (
+    call set %~1=%%%~1:%%~a%%
+)
 exit /b
 
 @rem ---------------------- Loggers -----------------------
