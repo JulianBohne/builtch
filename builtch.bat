@@ -1,7 +1,7 @@
 @echo off
 
 @rem The MIT license can be found at the bottom of the file
-set builtch_version_string=--------- Version 0.2.1 ---------
+set builtch_version_string=--------- Version 0.2.2 ---------
 @rem Note: keep same size: ---------------------------------
 
 @rem ------------ Things for your `config.bat` ------------
@@ -385,7 +385,7 @@ echo set source_files=%project_name%.c>>config.bat
 echo set output_file=%project_name%.exe>>config.bat
 echo.>>config.bat
 echo @rem ----------- Arguments ----------->>config.bat
-echo set common_args=-Wall>>config.bat
+echo set common_args=-Wall -Werror=return-type -Werror=int-conversion -Werror=implicit-function-declaration>>config.bat
 echo set debug_args=-D _DEBUG>>config.bat
 echo set release_args=-D NDEBUG -O3>>config.bat
 echo set test_args=-D _DEBUG -D TESTING>>config.bat

@@ -6,7 +6,7 @@ set source_files=example.c, hello.c
 set output_file=example.exe
 
 @rem ----------- Arguments -----------
-set common_args=-Wall
+set common_args=-Wall -Werror=return-type -Werror=int-conversion -Werror=implicit-function-declaration
 set debug_args=-D _DEBUG
 set release_args=-D NDEBUG -O3
 set test_args=-D _DEBUG -D TESTING
